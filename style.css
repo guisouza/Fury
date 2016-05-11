@@ -1,0 +1,34 @@
+body,html{
+  height: 100%;
+  margin:0px;
+  padding: 0px;
+  display: block;
+}
+
+ul{
+  padding: 0px;
+  margin: 0px;
+}
+
+
+.menu{
+  float: left;
+  width: 300px;
+  height: 100%;
+  background: black;
+}
+
+.menuItem{
+  background: #CCC;
+  height: 30px;
+  width: 100%;
+  margin-top: 5px;
+  text-align: center;
+  padding-top: 10px;
+}
+
+
+
+.checked{
+  color: lime;
+}

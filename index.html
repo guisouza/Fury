@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+  <script>
+
+
+    let items = [{
+      title : 'asdbkjasbdkj',
+      checked : false
+    },{
+      title : 'dfg',
+      checked : false
+    },{
+      title : 'asdbkjasasdasdbdkj',
+      checked : true
+    },{
+      title : 'a232kjasbdkj',
+      checked : false
+    },{
+      title : 'asdbkjas dfgsdfgbdkj',
+      checked : false
+    }]
+
+
+    function check(i){
+      i = parseInt(i);
+      items[i].checked = !items[i].checked;
+    }
+
+    function list(){
+      return ƒ.ul(items.map(listItem))
+    }
+
+    function listItem(todo,i){
+      return ƒ.el('li')({
+        'click' : 'check('+i+')',
+        'data-fury' : true,
+        'class' : todo.checked?'checked':''
+      },todo.title)
+    }
+
+    function addItem(){
+      return items.push({
+        title : document.querySelector('[name="astolfo"]').value,
+        checked : false
+      })
+    }
+
+    function form(){
+      let input = ƒ.el('input')({
+        type : 'button',
+        'data-fury' : true,
+        click: 'addItem()',
+        value: 'Adicionar'
+      })
+
+      let field = ƒ.el('input')({
+        type : 'text',
+        name : 'astolfo',
+        'data-fury' : true,
+        placeholder : 'Titulo'
+      })
+
+     return el('form')([input,field])
+    }
+
+
+    function app(){
+      return [list(),form()]
+    }
+
+
+  </script>
+</head>
+<body *>
+    app(olá)
+  <script src="fury.js"></script>
+</body>
+</html>
