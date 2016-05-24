@@ -6,77 +6,34 @@
   <link rel="stylesheet" href="style.css">
   <script>
 
-
-    let items = [{
-      title : 'asdbkjasbdkj',
-      checked : false
-    },{
-      title : 'dfg',
-      checked : false
-    },{
-      title : 'asdbkjasasdasdbdkj',
-      checked : true
-    },{
-      title : 'a232kjasbdkj',
-      checked : false
-    },{
-      title : 'asdbkjas dfgsdfgbdkj',
-      checked : false
-    }]
-
-
-    function check(i){
-      i = parseInt(i);
-      items[i].checked = !items[i].checked;
-    }
-
-    function list(){
-      return ƒ.ul(items.map(listItem))
-    }
-
-    function listItem(todo,i){
+    const listItem = (todo)=>{
       return ƒ.el('li')({
-        'click' : 'check('+i+')',
-        'data-fury' : true,
-        'class' : todo.checked?'checked':''
-      },todo.title)
+        'click' : check.bind(this, todo),
+        'class' : ()=>todo.checked?'checked':''
+      },()=>todo.title + Date.now())
     }
 
-    function addItem(){
-      return items.push({
-        title : document.querySelector('[name="astolfo"]').value,
-        checked : false
-      })
+    const check = (todo)=> todo.checked = !todo.checked;
+
+    const list = (items) => {
+
+      return items.then(items=>{
+        return ƒ.el('ul')(items.map(listItem))
+      });
+      
     }
 
-    function form(){
-      let input = ƒ.el('input')({
-        type : 'button',
-        'data-fury' : true,
-        click: 'addItem()',
-        value: 'Adicionar'
-      })
-
-      let field = ƒ.el('input')({
-        type : 'text',
-        name : 'astolfo',
-        'data-fury' : true,
-        placeholder : 'Titulo'
-      })
-
-     return el('form')([input,field])
+    var app = (url) => {
+      const items = fetch(url)
+      .then(response => response.json());
+      return list(items);
     }
-
-
-    function app(){
-      return [list(),form()]
-    }
-
 
   </script>
 </head>
 <body *>
-    app(olá)
+    app('/items.json')
   <script src="fury.js"></script>
+  <script src="functions/list.js"></script>
 </body>
 </html>

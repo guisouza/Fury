@@ -1,38 +1,14 @@
-var ƒ = {
+var FUU = {
     parseParams : parseParams,
-    fetchEvents : fetchEvents,
-    attach : attach,
     fetchExecs : fetchExecs,
     render : render,
     parseFormat : parseFormat,
-    ul : ul,
     el : el,
-    append : append,
-    createElement : createFuryEl
+    append : append
 }
-
 
 function parseParams(functionArguments){
-  return functionArguments.split(',');
-}
-
-
-function fetchEvents(item){
-  if (item.getAttribute('click') && item.getAttribute('evented') !== "true"){
-    item.setAttribute('evented',true)
-    let functionCall = /(.*)\((.*)\)/.exec(item.getAttribute('click').trim());
-    let functionArguments = parseParams(functionCall[2]);
-    attach(item)('click',this[functionCall[1]],functionArguments)
-  }
-}
-
-function attach(el){
-  return function event(event,virtualHandlr, args){
-    el.addEventListener(event,function(){
-      virtualHandlr.apply(this, args)
-      fetchExecs(document)
-    }.bind(this),false)
-  }
+  return functionArguments.split(',').map(a=>eval(a));
 }
 
 function fetchExecs(el){
@@ -40,9 +16,7 @@ function fetchExecs(el){
   [].forEach.call(el.querySelectorAll('[*],[data-fury]'),render);
 }
 
-
 function render(item){
-    fetchEvents(item);
     let functionCall = item.getAttribute('exec') || item.textContent.trim();
     item.setAttribute('exec',functionCall)
 
@@ -51,8 +25,6 @@ function render(item){
     if (functionCall){
 
       let functionArguments = functionCall[2];
-
-      console.log(functionArguments);
 
       functionArguments = parseParams(functionArguments);
 
@@ -68,6 +40,7 @@ function render(item){
 
 
   function parseFormat(item,result){
+
     if (typeof result === 'string'){
       return item.textContent = result;
     }
@@ -80,55 +53,81 @@ function render(item){
       return item.appendChild(result);
     }
 
-
     if (Array.isArray(result)){
       return result.map(function(i){
         return parseFormat(item,i)
       })
     }
+
+    if (result.then){
+      return result.then(result=>{
+        parseFormat(item,result);
+        return fetchExecs(item);
+      });
+    }
+
   }
-
-
-document.addEventListener("DOMContentLoaded", function(event) {
-  fetchExecs()
-});
-
-
-
-function ul(content,attrs){
-
-  let ul =  document.createElement('ul')
-
-  content.forEach(function(i){
-    ul.appendChild(i)
-  })
-
-  return ul
-}
 
 
 
 function el(a){
-  return function(attrs,content){
+  return function currentElement(attrs,content){
 
     if (!content && (Array.isArray(attrs) || attrs.nodeName || typeof attrs === 'string' || typeof attrs === 'function' )){
       content = attrs
       attrs = false
     }
 
-    let li = document.createElement(a);
-    if (content)
-    append(li,content);
-    if (attrs)
-    Object.keys(attrs).forEach(function(key){
-      li.setAttribute(key,attrs[key]);
-    })
-    return li
+    let el = document.createElement(a);
+
+    if (content){
+
+      append(el,content);
+    }
+    if (attrs){
+      Object.keys(attrs).forEach(function(key){
+        if (key === 'click' && typeof attrs[key] === 'function'){
+            return el.addEventListener('click',(e)=>{
+              attrs[key](e);
+              refresh(el,content,attrs)
+            })
+        }
+
+        if (typeof attrs[key] === 'function'){
+            return el.setAttribute(key,attrs[key]());
+        }
+        return el.setAttribute(key,attrs[key]);
+      })
+    }
+
+    return el
   }
 }
 
+function refresh(el,content,attrs){
+  if (!content && (Array.isArray(attrs) || attrs.nodeName || typeof attrs === 'string' || typeof attrs === 'function' )){
+    content = attrs
+    attrs = false
+  }
+  if (content){
+    append(el,content);
+  }
+  if (attrs){
+    Object.keys(attrs).forEach(function(key){
+      if (key === 'click'){
+        return false
+      }
+      if (typeof attrs[key] === 'function'){
+          return el.setAttribute(key,attrs[key]());
+      }
+      return el.setAttribute(key,attrs[key]);
+
+    })
+  }
+}
 
 function append(node,content){
+
   if (Array.isArray(content)){
     return content.forEach(content=>append(node,content))
   }
@@ -141,13 +140,9 @@ function append(node,content){
   if (typeof content === 'function'){
     return append(node,content())
   }
+
 }
 
-
-function createFuryEl(nodeName,content){
-  el = el(nodeName)(content);
-  el.setAttribute('data-fury',true);
-  if (content)
-    el.textContent = content
-  return el
-}
+document.addEventListener("DOMContentLoaded", function(event) {
+  fetchExecs()
+});
